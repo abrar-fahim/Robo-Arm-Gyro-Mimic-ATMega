@@ -55,7 +55,7 @@ int main(void) {
     double yawError = 0;
     
     int calibrationState = 0;       //0 means not calibrated
-    int delay = 200;
+    int delay = 100;
 
 	#if MPU6050_GETATTITUDE == 0
     int16_t velx = 0;
@@ -196,7 +196,7 @@ int main(void) {
         else if(calibrationState == 1) {
             roll1 -= rollError;
             pitch1 -= pitchError;
-            yaw1 -= yawError;
+            yaw1 -= yawError-30;
             
             if(yaw1 > 30) {
                 PORTB = 0b11101110;
