@@ -15,7 +15,7 @@ Please refer to LICENSE file for licensing information.
 //if some error appears we must add -lm and -lc to C linker, the linker line should become somethink like this
 //${COMMAND} -lm ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS} -lc
 
-
+#define F_CPU 1000000
 #include "mpu6050.h"
 
 #if MPU6050_GETATTITUDE == 2

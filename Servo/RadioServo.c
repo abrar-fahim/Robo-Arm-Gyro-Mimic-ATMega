@@ -98,6 +98,7 @@ int main(void) {
 					startyaw = (PINB << 4);
 					startyaw = (startyaw & 0b00110000);
 					if ((startyaw & 0b00100000)  && (startyaw & 0b00010000)) {
+                        //error
 						startyaw = 0b00110011;
 						state=0;
 					}
@@ -125,15 +126,16 @@ int main(void) {
 					rollpitch = (PINB << 4);
 					rollpitch = rollpitch & 0b11110000;
 					if ( ((rollpitch & 0b10000000) && (rollpitch & 0b01000000))  || ((rollpitch & 0b00100000) && (rollpitch & 0b00010000)) ){
+                        //error
 						rollpitch = 0b11111111;
 						state=0;
 						continue;
 					}
-					else if(rollpitch&0b10000000){
+					else if(rollpitch & 0b10000000){
 						 uart_puts("Roll++\n");
 						 servoTarget2++;
 					}
-					else if(rollpitch&0b01000000) {
+					else if(rollpitch & 0b01000000) {
 						uart_puts("Roll--\n");
 						servoTarget2--;
 						
@@ -141,11 +143,11 @@ int main(void) {
 					else {
 						uart_puts("RollNo\n");
 					}
-					if(rollpitch&0b00100000) {
+					if(rollpitch & 0b00100000) {
 						uart_puts("Pitch++\n");
 						servoTarget3++;
 					}
-					else if(rollpitch&0b00010000) {
+					else if(rollpitch & 0b00010000) {
 						uart_puts("Pitch--\n");
 						servoTarget3--;
 					}
@@ -158,16 +160,16 @@ int main(void) {
 				
 			}
 			else if (state == 2) {
-				if (((PINB & 0b00001100) == 0b00001100) || ((PINB & 0b00000011) != 0b00000011) )state=0;
+				if (((PINB & 0b00001100) == 0b00001100) || ((PINB & 0b00000011) != 0b00000011) )state = 0;  //error
 				else if ( ((PINB << 4) & 0b11110000) != rollpitch ){		//found claw
 					rollpitch = 0b11111111;
-					state=0;
+					state = 0;
 					clawend = (PINB << 4);
 					clawend = clawend & 0b11110000;
-					if(clawend&0b10000000) {
+					if(clawend & 0b10000000) {
 						uart_puts("Claw Open\n");
 					}
-					else if(clawend&0b01000000) {
+					else if(clawend & 0b01000000) {
 						uart_puts("Claw Close\n");
 					}
 					else {

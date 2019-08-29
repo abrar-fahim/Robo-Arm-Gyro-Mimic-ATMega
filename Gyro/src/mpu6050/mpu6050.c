@@ -7,7 +7,7 @@ Released under GPLv3.
 Please refer to LICENSE file for licensing information.
 */
 
-
+#define F_CPU 1000000
 #include <stdlib.h>
 #include <string.h>
 #include <avr/io.h>
@@ -562,22 +562,8 @@ void mpu6050_getRawData(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int1
     
 }
 
-void getVelocity(int16_t* velx, int16_t* vely, int16_t* velz, uint32_t elapsedTime) {
-    double ax = 0;
-    double ay = 0;
-    double az = 0;
-    double gx = 0;
-    double gy = 0;
-    double gz = 0;
-    mpu6050_getConvData(&ax, &ay, &az, &gx, &gy, &gz);
-    
-    //velx parameter contains prev velocity
-    
-    *velx = *velx * 10 + ax * 9.81 * (elapsedTime / 1000.0) * 10;
-    *vely = *vely * 10 + ay * 9.81 * (elapsedTime / 1000.0) * 10;
-    *velz = *velz * 10 + (az - 1) * 9.81 * (elapsedTime / 1000.0) * 10;
-    
-}
+
+
 
 /*
  * get raw data converted to g and deg/sec values
@@ -606,6 +592,23 @@ void mpu6050_getConvData(double* axg, double* ayg, double* azg, double* gxds, do
 	*gyds = (double)(gy)/MPU6050_GGAIN;
 	*gzds = (double)(gz)/MPU6050_GGAIN;
 	#endif
+}
+
+void getVelocity(int16_t* velx, int16_t* vely, int16_t* velz, uint32_t elapsedTime) {
+    double ax = 0;
+    double ay = 0;
+    double az = 0;
+    double gx = 0;
+    double gy = 0;
+    double gz = 0;
+    mpu6050_getConvData(&ax, &ay, &az, &gx, &gy, &gz);
+    
+    //velx parameter contains prev velocity
+    
+    *velx = *velx * 10 + ax * 9.81 * (elapsedTime / 1000.0) * 10;
+    *vely = *vely * 10 + ay * 9.81 * (elapsedTime / 1000.0) * 10;
+    *velz = *velz * 10 + (az - 1) * 9.81 * (elapsedTime / 1000.0) * 10;
+    
 }
 
 #if MPU6050_GETATTITUDE == 1

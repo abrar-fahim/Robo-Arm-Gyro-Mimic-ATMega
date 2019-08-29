@@ -53,6 +53,11 @@ int main(void) {
     double rollError = 0;
     double pitchError = 0;
     double yawError = 0;
+    double roll1;
+    double pitch1;
+    double yaw1;
+    
+    double prevRoll, prevPitch, prevYaw;
     
     int calibrationState = 0;       //0 means not calibrated
     int delay = 100;
@@ -174,9 +179,9 @@ int main(void) {
         char itmp[10];
         
         
-        double roll1 = roll * 180 / PI;
-        double pitch1 = pitch * 180 / PI;
-        double yaw1 = yaw * 180 / PI;
+        roll1 = roll * 180 / PI;
+        pitch1 = pitch * 180 / PI;
+        yaw1 = yaw * 180 / PI;
 //        double qa = qw * 100;
 //        double qb = qx * 100;
 //        double qc = qy * 100;
@@ -198,12 +203,18 @@ int main(void) {
             pitch1 -= pitchError;
             yaw1 -= yawError-30;
             
-            if(yaw1 > 30) {
+            
+            //need to check for appropriate threshold values by trial and error later, using 5 for now
+            int yawDiff = abs(prevYaw - yaw1);
+            int pitchDiff = abs(prevPitch - pitch1);
+            int rollDiff = abs(prevRoll - roll1);
+            
+            if(yaw1 > 30 && yawDiff < 5) {
                 PORTB = 0b11101110;
                 _delay_ms(delay);
                 
             }
-            else if(yaw1 < -30) {
+            else if(yaw1 < -30 && yawDiff < 5) {
                 PORTB = 0b11011101;
                 _delay_ms(delay);
             }
@@ -214,12 +225,12 @@ int main(void) {
             
             
             
-            if(roll1 > 30) {
+            if(roll1 > 30 && rollDiff < 5) {
                 PORTB = 0b10001000;
                //_delay_ms(delay);
                 
             }
-            else if(roll1 < -30) {
+            else if(roll1 < -30 && rollDiff < 5) {
                 PORTB = 0b01000100;
                 //_delay_ms(delay);
             }
@@ -229,13 +240,13 @@ int main(void) {
             
             
             
-            if(pitch1 > 30) {
+            if(pitch1 > 30 && pitchDiff < 5) {
                 PORTB = PORTB & 0b11001100;
                 PORTB = PORTB | 0b00100010;
                 _delay_ms(delay);
                 
             }
-            else if(pitch1 < -30) {
+            else if(pitch1 < -30 && pitchDiff < 5) {
                 PORTB = PORTB & 0b11001100;
                 PORTB = PORTB | 0b00010001;
                 _delay_ms(delay);
@@ -252,8 +263,12 @@ int main(void) {
             
             
             dtostrf(roll1, 3, 0, itmp); uart_puts(itmp); uart_puts("   ");
-            dtostrf(pitch1, 3, 0, itmp); uart_puts(itmp); uart_putc("   ");
-            dtostrf(yaw1, 3, 0, itmp); uart_puts(itmp); uart_putc("   ");
+            dtostrf(pitch1, 3, 0, itmp); uart_puts(itmp); uart_puts("   ");
+            dtostrf(yaw1, 3, 0, itmp); uart_puts(itmp); uart_puts("   ");
+            
+            prevRoll = roll1;
+            prevYaw = yaw1;
+            prevPitch = pitch1;
 
         }
         else {
