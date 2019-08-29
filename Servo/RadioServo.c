@@ -61,7 +61,8 @@ int main(void) {
 	sei();
 	//all servos in port A
 	
-	DDRB = 0x00;
+	DDRB = 0x00;	
+	DDRA = 0xFF;
 	TCCR1A |= 1 << WGM11;
 	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS10;
 	TIMSK  |= 1 << OCIE1A;
@@ -73,16 +74,17 @@ int main(void) {
 	sei();
 
 	servo1 = 0;
-	servo2 = 120;
+	servo2 = 90;
+	servo3 = 90;
 	//state = 0; //0 for counting up, 1 for counting down
 	while(1) {
 		
 		//Here, values to servo1 and servo2 etc... will be processed from gyro readings
 		
 		if(TCNT1 >= 300 && TCNT1 <= 2300) {
-		//	if(TCNT1 >= getPulseWidth(servo1) && bit_is_set(PORTA, PINA0)) PORTA &= ~(1 << PINA0);
-			//if(TCNT1 >= getPulseWidth(servo2) && bit_is_set(PORTA, PINA1)) PORTA &= ~(1 << PINA1);
-			//if(TCNT1 >= getPulseWidth(servo3) && bit_is_set(PORTA, PINA2)) PORTA &= ~(1 << PINA2);
+			if(TCNT1 >= getPulseWidth(servo1) && bit_is_set(PORTA, PINA0)) PORTA &= ~(1 << PINA0);
+			if(TCNT1 >= getPulseWidth(servo2) && bit_is_set(PORTA, PINA1)) PORTA &= ~(1 << PINA1);
+			if(TCNT1 >= getPulseWidth(servo3) && bit_is_set(PORTA, PINA2)) PORTA &= ~(1 << PINA2);
 			
 		}
 		
@@ -125,7 +127,7 @@ int main(void) {
 						continue;
 					}
 					else if(rollpitch&0b10000000){
-						 uart_puts("Roll++");
+						 uart_puts("Roll++\n");
 						 servoTarget2++;
 					}
 					else if(rollpitch&0b01000000) {
