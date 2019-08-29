@@ -67,9 +67,9 @@ int main(void) {
 	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS10;
 	TIMSK  |= 1 << OCIE1A;
 	ICR1 = 19999;
-	unsigned char startyaw=0b00110011;
-	unsigned char rollpitch=0b11111111;
-	unsigned char clawend=0b11001100;
+	unsigned char startyaw = 0b00110011;
+	unsigned char rollpitch = 0b11111111;
+	unsigned char clawend = 0b11001100;
 
 	sei();
 
@@ -90,31 +90,34 @@ int main(void) {
 		
 		if(TCNT1 < 300 || TCNT1 > 2300) {
 			
-			if (state==0){	//BEFORE START
+			if (state == 0){	//BEFORE START
 				if ((PINB & 0b00001100) == 0b00001100){		//GOT YAW
 					uart_puts("HEREEEEE\n\n");
 					clawend = 0b11001100;
 					state++;
 					startyaw = (PINB << 4);
 					startyaw = (startyaw & 0b00110000);
-					if ((startyaw & 0b00100000)  && (startyaw & 0b00010000)){
+					if ((startyaw & 0b00100000)  && (startyaw & 0b00010000)) {
 						startyaw = 0b00110011;
 						state=0;
 					}
-					else if (startyaw &0b00100000){
+					else if (startyaw & 0b00100000) {
 						uart_puts("yaw++\n");
 						servoTarget1++;
 					}
-					else if (startyaw &0b00010000){
+					else if (startyaw & 0b00010000) {
 						uart_puts("yaw--\n");
 						servoTarget1--;
 					}
-					else {uart_puts("YAWN\n");}
+					else {
+                        uart_puts("YAWN\n");
+                        
+                    }
 					
 					
 				}
 			}
-			else if (state==1){		
+			else if (state == 1) {
 				if ((PINB & 0b00001100) != 0b00001100){			
 					state++;
 					startyaw = 0b00110011;
@@ -154,7 +157,7 @@ int main(void) {
 				}
 				
 			}
-			else if (state==2){
+			else if (state == 2) {
 				if (((PINB & 0b00001100) == 0b00001100) || ((PINB & 0b00000011) != 0b00000011) )state=0;
 				else if ( ((PINB << 4) & 0b11110000) != rollpitch ){		//found claw
 					rollpitch = 0b11111111;
