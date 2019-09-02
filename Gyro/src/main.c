@@ -137,7 +137,9 @@ int main(void) {
 		#endif
 
 		#if MPU6050_GETATTITUDE == 0
-		char itmp[10];
+        
+        //RAW
+        char itmp[10];
         
         
         
@@ -155,16 +157,16 @@ int main(void) {
         ltoa(gx, itmp, 10); uart_putc(' '); uart_puts(itmp); uart_putc(' ');
         ltoa(gy, itmp, 10); uart_putc(' '); uart_puts(itmp); uart_putc(' ');
         ltoa(gz, itmp, 10); uart_putc(' '); uart_puts(itmp); uart_putc(' ');
-//        uart_puts("\r\n");
-//
-//
-//
-//        dtostrf(axg, 3, 2, itmp); uart_puts(itmp); uart_putc(' ');
-//        dtostrf(ayg, 3, 2, itmp); uart_puts(itmp); uart_putc(' ');
-//        dtostrf(azg, 3, 2, itmp); uart_puts(itmp); uart_putc(' ');
-//        dtostrf(gxds, 3, 0, itmp); uart_puts(itmp); uart_putc(' ');
-//        dtostrf(gyds, 3, 0, itmp); uart_puts(itmp); uart_putc(' ');
-//        dtostrf(gzds, 3, 0, itmp); uart_puts(itmp); uart_putc(' ');
+        uart_puts("\r\n");
+
+
+
+        dtostrf(axg, 3, 2, itmp); uart_puts(itmp); uart_putc(' ');
+        dtostrf(ayg, 3, 2, itmp); uart_puts(itmp); uart_putc(' ');
+        dtostrf(azg, 3, 2, itmp); uart_puts(itmp); uart_putc(' ');
+        dtostrf(gxds, 3, 0, itmp); uart_puts(itmp); uart_putc(' ');
+        dtostrf(gyds, 3, 0, itmp); uart_puts(itmp); uart_putc(' ');
+        dtostrf(gzds, 3, 0, itmp); uart_puts(itmp); uart_putc(' ');
 		uart_puts("\r\n");
 
 		uart_puts("\r\n");

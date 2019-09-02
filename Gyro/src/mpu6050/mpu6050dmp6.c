@@ -445,9 +445,13 @@ void mpu6050_getQuaternion(const uint8_t* packet, double *qw, double *qx, double
  * 3. rotate around sensor X plane by roll
  */
 void mpu6050_getRollPitchYaw(double qw, double qx, double qy, double qz, double *roll, double *pitch, double *yaw) {
-	*yaw = atan2(2*qx*qy - 2*qw*qz, 2*qw*qw + 2*qx*qx - 1);
-	*pitch = -asin(2*qx*qz + 2*qw*qy);
-	*roll = atan2(2*qy*qz - 2*qw*qx, 2*qw*qw + 2*qz*qz - 1);
+//    *yaw = atan2(2*qx*qy - 2*qw*qz, 2*qw*qw + 2*qx*qx - 1);
+//    *pitch = -asin(2*qx*qz + 2*qw*qy);
+//    *roll = atan2(2*qy*qz - 2*qw*qx, 2*qw*qw + 2*qz*qz - 1);
+    
+    *yaw = atan2(2*qx*qy + 2*qw*qz, -2*qz*qz + -2*qy*qy + 1);
+    *pitch = asin(-2*qx*qz + 2*qw*qy);
+    *roll = atan2(2*qy*qz + 2*qw*qx, -2*qx*qx - 2*qy*qy + 1);
 }
 
 /*
