@@ -50,12 +50,6 @@ int getPulseWidth(int angle) {
 	return result;
 }
 
-void setAngle(int pin, double angle) {
-	
-	
-	
-}
-
 int main(void) {
 	uart_init(UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU));
 	sei();
@@ -73,7 +67,7 @@ int main(void) {
 
 	sei();
 
-	servo1 = 0;
+	servo1 = 90;
 	servo2 = 90;
 	servo3 = 90;
 	//state = 0; //0 for counting up, 1 for counting down
@@ -90,8 +84,8 @@ int main(void) {
 		
 		if(TCNT1 < 300 || TCNT1 > 2300) {
 			
-			if (state == 0){	//BEFORE START
-				if ((PINB & 0b00001100) == 0b00001100){		//GOT YAW
+			if (state == 0) {	//BEFORE START
+				if ((PINB & 0b00001100) == 0b00001100) {		//GOT YAW
 					uart_puts("HEREEEEE\n\n");
 					clawend = 0b11001100;
 					state++;
@@ -100,7 +94,7 @@ int main(void) {
 					if ((startyaw & 0b00100000)  && (startyaw & 0b00010000)) {
                         //error
 						startyaw = 0b00110011;
-						state=0;
+						state = 0;
 					}
 					else if (startyaw & 0b00100000) {
 						uart_puts("yaw++\n");
@@ -119,19 +113,19 @@ int main(void) {
 				}
 			}
 			else if (state == 1) {
-				if ((PINB & 0b00001100) != 0b00001100){			
+				if ((PINB & 0b00001100) != 0b00001100) {
 					state++;
 					startyaw = 0b00110011;
 					
 					rollpitch = (PINB << 4);
 					rollpitch = rollpitch & 0b11110000;
-					if ( ((rollpitch & 0b10000000) && (rollpitch & 0b01000000))  || ((rollpitch & 0b00100000) && (rollpitch & 0b00010000)) ){
+					if ( ((rollpitch & 0b10000000) && (rollpitch & 0b01000000))  || ((rollpitch & 0b00100000) && (rollpitch & 0b00010000)) ) {
                         //error
 						rollpitch = 0b11111111;
-						state=0;
+						state = 0;
 						continue;
 					}
-					else if(rollpitch & 0b10000000){
+					else if(rollpitch & 0b10000000) {
 						 uart_puts("Roll++\n");
 						 servoTarget2++;
 					}
@@ -160,12 +154,13 @@ int main(void) {
 				
 			}
 			else if (state == 2) {
-				if (((PINB & 0b00001100) == 0b00001100) || ((PINB & 0b00000011) != 0b00000011) )state = 0;  //error
-				else if ( ((PINB << 4) & 0b11110000) != rollpitch ){		//found claw
+				if (((PINB & 0b00001100) == 0b00001100) || ((PINB & 0b00000011) != 0b00000011) ) state = 0;  //error
+				else if ( ((PINB << 4) & 0b11110000) != rollpitch ) {		//found claw
 					rollpitch = 0b11111111;
 					state = 0;
 					clawend = (PINB << 4);
 					clawend = clawend & 0b11110000;
+                    //clawend = clawend & 0b11000000;
 					if(clawend & 0b10000000) {
 						uart_puts("Claw Open\n");
 					}
@@ -191,7 +186,7 @@ int main(void) {
 ISR(TIMER1_COMPA_vect) {
 	//interrupt called when TCNT1 value reaches ICR1 value (every 20ms)
 	
-	//PORTA = 0xFF;
+	PORTA = 0xFF;
 	timerCount++;
 	if(timerCount >= 10) {  //every 200ms
 		if(servo1 < servoTarget1 - 7) {
