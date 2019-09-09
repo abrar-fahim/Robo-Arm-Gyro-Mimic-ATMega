@@ -58,7 +58,7 @@ int main(void) {
 	DDRB = 0x00;
 	DDRA = 0xFF;
 	TCCR1A |= 1 << WGM11;
-	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS11;
+	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS10;
 	TIMSK  |= 1 << OCIE1A;
 	ICR1 = 19999;
 
