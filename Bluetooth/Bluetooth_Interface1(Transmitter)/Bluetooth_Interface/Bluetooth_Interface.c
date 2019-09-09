@@ -34,6 +34,8 @@ int main(void)
 			power = 0;
 		}
 		
+		
+		
 		_delay_ms(500);
 	}		
 	return 0;

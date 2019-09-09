@@ -3,29 +3,29 @@ Bluetooth_Interface2.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00000142  00000000  00000000  00000054  2**1
+  0 .text         0000014e  00000000  00000000  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000000  00800060  00800060  00000196  2**0
+  1 .data         00000000  00800060  00800060  000001a2  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .comment      00000030  00000000  00000000  00000196  2**0
+  2 .comment      00000030  00000000  00000000  000001a2  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000001c8  2**2
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000001d4  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 00000058  00000000  00000000  00000204  2**0
+  4 .debug_aranges 00000058  00000000  00000000  00000210  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   000006ef  00000000  00000000  0000025c  2**0
+  5 .debug_info   00000707  00000000  00000000  00000268  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000615  00000000  00000000  0000094b  2**0
+  6 .debug_abbrev 00000615  00000000  00000000  0000096f  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   00000348  00000000  00000000  00000f60  2**0
+  7 .debug_line   00000354  00000000  00000000  00000f84  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000084  00000000  00000000  000012a8  2**2
+  8 .debug_frame  00000084  00000000  00000000  000012d8  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    00000344  00000000  00000000  0000132c  2**0
+  9 .debug_str    000003d4  00000000  00000000  0000135c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    000000da  00000000  00000000  00001670  2**0
+ 10 .debug_loc    000000ed  00000000  00000000  00001730  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000038  00000000  00000000  0000174a  2**0
+ 11 .debug_ranges 00000038  00000000  00000000  0000181d  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -61,7 +61,7 @@ Disassembly of section .text:
   5c:	de bf       	out	0x3e, r29	; 62
   5e:	cd bf       	out	0x3d, r28	; 61
   60:	0e 94 36 00 	call	0x6c	; 0x6c <main>
-  64:	0c 94 9f 00 	jmp	0x13e	; 0x13e <_exit>
+  64:	0c 94 a5 00 	jmp	0x14a	; 0x14a <_exit>
 
 00000068 <__bad_interrupt>:
   68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
@@ -82,7 +82,7 @@ int main(void)
   74:	75 e2       	ldi	r23, 0x25	; 37
   76:	80 e0       	ldi	r24, 0x00	; 0
   78:	90 e0       	ldi	r25, 0x00	; 0
-  7a:	0e 94 4a 00 	call	0x94	; 0x94 <USART_Init>
+  7a:	0e 94 4c 00 	call	0x98	; 0x98 <USART_Init>
 	while(1)
 	{
 		Data_in = USART_RxChar();						/* receive data from Bluetooth device*/
@@ -96,137 +96,131 @@ int main(void)
 	while(1)
 	{
 		Data_in = USART_RxChar();						/* receive data from Bluetooth device*/
-  80:	0e 94 79 00 	call	0xf2	; 0xf2 <USART_RxChar>
+  80:	0e 94 7b 00 	call	0xf6	; 0xf6 <USART_RxChar>
 		if(Data_in =='1')
   84:	81 33       	cpi	r24, 0x31	; 49
   86:	11 f4       	brne	.+4      	; 0x8c <main+0x20>
 		{
 			PORTB = 0xFF;
   88:	c8 bb       	out	0x18, r28	; 24
-  8a:	fa cf       	rjmp	.-12     	; 0x80 <main+0x14>
+  8a:	03 c0       	rjmp	.+6      	; 0x92 <main+0x26>
 			//LED |= (1<<PB0);							/* Turn ON LED */	
 		}
 		else if(Data_in =='0')
   8c:	80 33       	cpi	r24, 0x30	; 48
-  8e:	c1 f7       	brne	.-16     	; 0x80 <main+0x14>
+  8e:	09 f4       	brne	.+2      	; 0x92 <main+0x26>
 		{
 			PORTB = 0x00;
   90:	18 ba       	out	0x18, r1	; 24
-  92:	f6 cf       	rjmp	.-20     	; 0x80 <main+0x14>
+			//LED &= ~(1<<PB0);							/* Turn OFF LED */
+		}
+		USART_TxChar(Data_in);
+  92:	0e 94 7f 00 	call	0xfe	; 0xfe <USART_TxChar>
+	}		
+  96:	f4 cf       	rjmp	.-24     	; 0x80 <main+0x14>
 
-00000094 <USART_Init>:
+00000098 <USART_Init>:
+  98:	1b b8       	out	0x0b, r1	; 11
+  9a:	2a b1       	in	r18, 0x0a	; 10
+  9c:	28 61       	ori	r18, 0x18	; 24
+  9e:	2a b9       	out	0x0a, r18	; 10
+  a0:	20 b5       	in	r18, 0x20	; 32
+  a2:	26 68       	ori	r18, 0x86	; 134
+  a4:	20 bd       	out	0x20, r18	; 32
+  a6:	dc 01       	movw	r26, r24
+  a8:	cb 01       	movw	r24, r22
+  aa:	88 0f       	add	r24, r24
+  ac:	99 1f       	adc	r25, r25
+  ae:	aa 1f       	adc	r26, r26
+  b0:	bb 1f       	adc	r27, r27
+  b2:	88 0f       	add	r24, r24
+  b4:	99 1f       	adc	r25, r25
+  b6:	aa 1f       	adc	r26, r26
+  b8:	bb 1f       	adc	r27, r27
+  ba:	9c 01       	movw	r18, r24
+  bc:	ad 01       	movw	r20, r26
+  be:	22 0f       	add	r18, r18
+  c0:	33 1f       	adc	r19, r19
+  c2:	44 1f       	adc	r20, r20
+  c4:	55 1f       	adc	r21, r21
+  c6:	22 0f       	add	r18, r18
+  c8:	33 1f       	adc	r19, r19
+  ca:	44 1f       	adc	r20, r20
+  cc:	55 1f       	adc	r21, r21
+  ce:	60 e0       	ldi	r22, 0x00	; 0
+  d0:	72 e1       	ldi	r23, 0x12	; 18
+  d2:	8a e7       	ldi	r24, 0x7A	; 122
+  d4:	90 e0       	ldi	r25, 0x00	; 0
+  d6:	0e 94 83 00 	call	0x106	; 0x106 <__udivmodsi4>
+  da:	8f ef       	ldi	r24, 0xFF	; 255
+  dc:	82 0f       	add	r24, r18
+  de:	89 b9       	out	0x09, r24	; 9
+  e0:	da 01       	movw	r26, r20
+  e2:	c9 01       	movw	r24, r18
+  e4:	01 97       	sbiw	r24, 0x01	; 1
+  e6:	a1 09       	sbc	r26, r1
+  e8:	b1 09       	sbc	r27, r1
+  ea:	89 2f       	mov	r24, r25
+  ec:	9a 2f       	mov	r25, r26
+  ee:	ab 2f       	mov	r26, r27
+  f0:	bb 27       	eor	r27, r27
+  f2:	80 bd       	out	0x20, r24	; 32
+  f4:	08 95       	ret
 
-#include "USART_RS232_H_file.h"						/* Include USART header file */
+000000f6 <USART_RxChar>:
+  f6:	5f 9b       	sbis	0x0b, 7	; 11
+  f8:	fe cf       	rjmp	.-4      	; 0xf6 <USART_RxChar>
+  fa:	8c b1       	in	r24, 0x0c	; 12
+  fc:	08 95       	ret
 
-void USART_Init(unsigned long BAUDRATE)				/* USART initialize function */
-{ 
-	UCSRA = 0x00;
-  94:	1b b8       	out	0x0b, r1	; 11
-	UCSRB |= (1 << RXEN) | (1 << TXEN);				/* Enable USART transmitter and receiver */
-  96:	2a b1       	in	r18, 0x0a	; 10
-  98:	28 61       	ori	r18, 0x18	; 24
-  9a:	2a b9       	out	0x0a, r18	; 10
-	UCSRC |= (1 << URSEL)| (1 << UCSZ0) | (1 << UCSZ1);	/* Write USCRC for 8 bit data and 1 stop bit */ 
-  9c:	20 b5       	in	r18, 0x20	; 32
-  9e:	26 68       	ori	r18, 0x86	; 134
-  a0:	20 bd       	out	0x20, r18	; 32
-	UBRRL = BAUD_PRESCALE;							/* Load UBRRL with lower 8 bit of prescale value */
-  a2:	dc 01       	movw	r26, r24
-  a4:	cb 01       	movw	r24, r22
-  a6:	88 0f       	add	r24, r24
-  a8:	99 1f       	adc	r25, r25
-  aa:	aa 1f       	adc	r26, r26
-  ac:	bb 1f       	adc	r27, r27
-  ae:	88 0f       	add	r24, r24
-  b0:	99 1f       	adc	r25, r25
-  b2:	aa 1f       	adc	r26, r26
-  b4:	bb 1f       	adc	r27, r27
-  b6:	9c 01       	movw	r18, r24
-  b8:	ad 01       	movw	r20, r26
-  ba:	22 0f       	add	r18, r18
-  bc:	33 1f       	adc	r19, r19
-  be:	44 1f       	adc	r20, r20
-  c0:	55 1f       	adc	r21, r21
-  c2:	22 0f       	add	r18, r18
-  c4:	33 1f       	adc	r19, r19
-  c6:	44 1f       	adc	r20, r20
-  c8:	55 1f       	adc	r21, r21
-  ca:	60 e0       	ldi	r22, 0x00	; 0
-  cc:	72 e1       	ldi	r23, 0x12	; 18
-  ce:	8a e7       	ldi	r24, 0x7A	; 122
-  d0:	90 e0       	ldi	r25, 0x00	; 0
-  d2:	0e 94 7d 00 	call	0xfa	; 0xfa <__udivmodsi4>
-  d6:	8f ef       	ldi	r24, 0xFF	; 255
-  d8:	82 0f       	add	r24, r18
-  da:	89 b9       	out	0x09, r24	; 9
-	UBRRH = (BAUD_PRESCALE >> 8);					/* Load UBRRH with upper 8 bit of prescale value */
-  dc:	da 01       	movw	r26, r20
-  de:	c9 01       	movw	r24, r18
-  e0:	01 97       	sbiw	r24, 0x01	; 1
-  e2:	a1 09       	sbc	r26, r1
-  e4:	b1 09       	sbc	r27, r1
-  e6:	89 2f       	mov	r24, r25
-  e8:	9a 2f       	mov	r25, r26
-  ea:	ab 2f       	mov	r26, r27
-  ec:	bb 27       	eor	r27, r27
-  ee:	80 bd       	out	0x20, r24	; 32
-  f0:	08 95       	ret
+000000fe <USART_TxChar>:
+  fe:	8c b9       	out	0x0c, r24	; 12
+ 100:	5d 9b       	sbis	0x0b, 5	; 11
+ 102:	fe cf       	rjmp	.-4      	; 0x100 <USART_TxChar+0x2>
+ 104:	08 95       	ret
 
-000000f2 <USART_RxChar>:
-}
+00000106 <__udivmodsi4>:
+ 106:	a1 e2       	ldi	r26, 0x21	; 33
+ 108:	1a 2e       	mov	r1, r26
+ 10a:	aa 1b       	sub	r26, r26
+ 10c:	bb 1b       	sub	r27, r27
+ 10e:	fd 01       	movw	r30, r26
+ 110:	0d c0       	rjmp	.+26     	; 0x12c <__udivmodsi4_ep>
 
-char USART_RxChar()									/* Data receiving function */
-{
-	while (!(UCSRA & (1 << RXC)));					/* Wait until new data receive */
-  f2:	5f 9b       	sbis	0x0b, 7	; 11
-  f4:	fe cf       	rjmp	.-4      	; 0xf2 <USART_RxChar>
-	return(UDR);									/* Get and return received data */ 
-  f6:	8c b1       	in	r24, 0x0c	; 12
-}
-  f8:	08 95       	ret
+00000112 <__udivmodsi4_loop>:
+ 112:	aa 1f       	adc	r26, r26
+ 114:	bb 1f       	adc	r27, r27
+ 116:	ee 1f       	adc	r30, r30
+ 118:	ff 1f       	adc	r31, r31
+ 11a:	a2 17       	cp	r26, r18
+ 11c:	b3 07       	cpc	r27, r19
+ 11e:	e4 07       	cpc	r30, r20
+ 120:	f5 07       	cpc	r31, r21
+ 122:	20 f0       	brcs	.+8      	; 0x12c <__udivmodsi4_ep>
+ 124:	a2 1b       	sub	r26, r18
+ 126:	b3 0b       	sbc	r27, r19
+ 128:	e4 0b       	sbc	r30, r20
+ 12a:	f5 0b       	sbc	r31, r21
 
-000000fa <__udivmodsi4>:
-  fa:	a1 e2       	ldi	r26, 0x21	; 33
-  fc:	1a 2e       	mov	r1, r26
-  fe:	aa 1b       	sub	r26, r26
- 100:	bb 1b       	sub	r27, r27
- 102:	fd 01       	movw	r30, r26
- 104:	0d c0       	rjmp	.+26     	; 0x120 <__udivmodsi4_ep>
+0000012c <__udivmodsi4_ep>:
+ 12c:	66 1f       	adc	r22, r22
+ 12e:	77 1f       	adc	r23, r23
+ 130:	88 1f       	adc	r24, r24
+ 132:	99 1f       	adc	r25, r25
+ 134:	1a 94       	dec	r1
+ 136:	69 f7       	brne	.-38     	; 0x112 <__udivmodsi4_loop>
+ 138:	60 95       	com	r22
+ 13a:	70 95       	com	r23
+ 13c:	80 95       	com	r24
+ 13e:	90 95       	com	r25
+ 140:	9b 01       	movw	r18, r22
+ 142:	ac 01       	movw	r20, r24
+ 144:	bd 01       	movw	r22, r26
+ 146:	cf 01       	movw	r24, r30
+ 148:	08 95       	ret
 
-00000106 <__udivmodsi4_loop>:
- 106:	aa 1f       	adc	r26, r26
- 108:	bb 1f       	adc	r27, r27
- 10a:	ee 1f       	adc	r30, r30
- 10c:	ff 1f       	adc	r31, r31
- 10e:	a2 17       	cp	r26, r18
- 110:	b3 07       	cpc	r27, r19
- 112:	e4 07       	cpc	r30, r20
- 114:	f5 07       	cpc	r31, r21
- 116:	20 f0       	brcs	.+8      	; 0x120 <__udivmodsi4_ep>
- 118:	a2 1b       	sub	r26, r18
- 11a:	b3 0b       	sbc	r27, r19
- 11c:	e4 0b       	sbc	r30, r20
- 11e:	f5 0b       	sbc	r31, r21
+0000014a <_exit>:
+ 14a:	f8 94       	cli
 
-00000120 <__udivmodsi4_ep>:
- 120:	66 1f       	adc	r22, r22
- 122:	77 1f       	adc	r23, r23
- 124:	88 1f       	adc	r24, r24
- 126:	99 1f       	adc	r25, r25
- 128:	1a 94       	dec	r1
- 12a:	69 f7       	brne	.-38     	; 0x106 <__udivmodsi4_loop>
- 12c:	60 95       	com	r22
- 12e:	70 95       	com	r23
- 130:	80 95       	com	r24
- 132:	90 95       	com	r25
- 134:	9b 01       	movw	r18, r22
- 136:	ac 01       	movw	r20, r24
- 138:	bd 01       	movw	r22, r26
- 13a:	cf 01       	movw	r24, r30
- 13c:	08 95       	ret
-
-0000013e <_exit>:
- 13e:	f8 94       	cli
-
-00000140 <__stop_program>:
- 140:	ff cf       	rjmp	.-2      	; 0x140 <__stop_program>
+0000014c <__stop_program>:
+ 14c:	ff cf       	rjmp	.-2      	; 0x14c <__stop_program>

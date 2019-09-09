@@ -30,6 +30,7 @@ int main(void)
 			PORTB = 0x00;
 			//LED &= ~(1<<PB0);							/* Turn OFF LED */
 		}
+		USART_TxChar(Data_in);
 	}		
 	return 0;
 }
