@@ -58,19 +58,15 @@ int main(void) {
 	DDRB = 0x00;	
 	DDRA = 0xFF;
 	TCCR1A |= 1 << WGM11;
-	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS10;
+	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS11;
 	TIMSK  |= 1 << OCIE1A;
 	ICR1 = 19999;
-	unsigned char startyaw = 0b00110011;
-	unsigned char rollpitch = 0b11111111;
-	unsigned char clawend = 0b11001100;
 
 	sei();
 
 	servo1 = 90;
 	servo2 = 90;
 	servo3 = 90;
-	//state = 0; //0 for counting up, 1 for counting down
 	while(1) {
 		
 		//Here, values to servo1 and servo2 etc... will be processed from gyro readings
