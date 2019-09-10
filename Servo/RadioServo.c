@@ -89,12 +89,8 @@ int main(void) {
 		
 		if(TCNT1 < 300 || TCNT1 > 2300) {
             
-            
-            //get yaw
-            
-            
             //yaw handling
-            //servo 3 is yaw
+            //servo 1 is yaw
             if(yaw < -90) yaw = -90;
             else if(yaw > 90) yaw = 90;
             
@@ -102,15 +98,61 @@ int main(void) {
             
             if( abs(prevYaw - yaw) > 10) continue;
             
-            servo3 = yaw;
+            servo1 = yaw;
             
             prevYaw = yaw;
             
+            
             //roll
-            //same as yaw, with servo1
+            //same as yaw, with servo 5
+            
+            if(roll < -90) roll = -90;
+            else if(roll > 90) roll = 90;
+            
+            roll = roll + 90;
+            
+            if( abs(prevRoll - roll) > 10) continue;
+            
+            servo5 = roll;
+            
+            prevRoll = roll;
             
             
-			
+            
+            //pitch
+            //3 motors, servos 2,3,4
+            
+            if(pitch < -90) pitch = -90;
+            else if(pitch > 90) pitch = 90;
+            
+            pitch = pitch + 90;
+            
+            if( abs(prevPitch - pitch) > 10) continue;
+            
+            //processing pitch
+            //for movements within +-30 degrees, only servo2 moves
+            //if movement > +-30 and < +- 60, only servo 3 moves
+            //if movement > +- 60, only servo 4 moves
+            
+            //say pitch = 80
+            if(pitch > -30 + 90 && pitch < 30 + 90) {
+                servo2 = pitch;
+                //servo2 = 120
+            }
+            
+            else if(pitch > -60 + 90 && pitch < 60 + 90) {
+                servo3 = pitch - servo2;
+                //servo3 = 30
+            }
+            
+            else {
+                servo4 = pitch - servo3 - servo2;
+                //servo4 = 50 for pitch = 80
+            }
+            prevPitch = pitch;
+            
+            //say pitch = 80
+            //so, servo2 = 120, servo3 = 140, servo4 =
 		}
 	
 		
