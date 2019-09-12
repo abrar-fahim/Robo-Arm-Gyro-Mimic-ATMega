@@ -41,11 +41,11 @@ int main(void) {
     
     
     
-    DDRA = 0xFF;
+    DDRA = 0x00;
     DDRB = 0xFF;
     
-    PORTA = 0xAA;
-    PORTB = 0xAA;
+    
+    PORTB = 0x00;
 //    uint32_t currentTime = 0;
 //    uint32_t previousTime = 0;
     uint32_t elapsedTime  = 0;
@@ -222,61 +222,92 @@ int main(void) {
           
             
             if(yaw1 > 30 && yawDiff < allowedDiff) {
-                PORTB = 0b11101110;
+               // PORTB = 0b11101110;
             //    _delay_ms(delay);
                 
             }
             else if(yaw1 < -30 && yawDiff < allowedDiff) {
-                PORTB = 0b11011101;
+              //  PORTB = 0b11011101;
               //  _delay_ms(delay);
             }
             else {
-                PORTB = 0b11001100;
+               // PORTB = 0b11001100;
               //  _delay_ms(delay);
             }
             
             
             
             if(roll1 > 30 && rollDiff < allowedDiff) {
-                PORTB = 0b10001000;
+             //   PORTB = 0b10001000;
                //_delay_ms(delay);
                 
             }
             else if(roll1 < -30 && rollDiff < allowedDiff) {
-                PORTB = 0b01000100;
+              //  PORTB = 0b01000100;
                 //_delay_ms(delay);
             }
             else {
-                PORTB = 0b00000000;
+               // PORTB = 0b00000000;
             }
             
             
             
             if(pitch1 > 30 && pitchDiff < allowedDiff) {
-                PORTB = PORTB & 0b11001100;
-                PORTB = PORTB | 0b00100010;
+            //    PORTB = PORTB & 0b11001100;
+              //  PORTB = PORTB | 0b00100010;
              //   _delay_ms(delay);
                 
             }
             else if(pitch1 < -30 && pitchDiff < allowedDiff) {
-                PORTB = PORTB & 0b11001100;
-                PORTB = PORTB | 0b00010001;
+          //      PORTB = PORTB & 0b11001100;
+            //    PORTB = PORTB | 0b00010001;
               //  _delay_ms(delay);
             }
             else {
-                PORTB = PORTB & 0b11001100;
+          //      PORTB = PORTB & 0b11001100;
                 //PORTB = PORTB | 0b00000000;
                // _delay_ms(delay);
             }
             
-            PORTB = 0b00110011;
+            //PORTB = 0b00110011;
             //_delay_ms(delay);
 
+
+			int clawOpen=0;
+			int clawClose=0;
+			int trainingStart =0;
+			int trainingEnd =0;
+			int repeat =0;
+			
+			PORTB = 0x00;
+			PORTB |= PINA;
+			
+
+            if ( (PINA & 0b00000001) == 0b00000001){		//CLAW OPEN
+				clawOpen=1;	
+			}
             
-            
+            if (PINA & 0b00000010){		//CLAW CLOSE
+	            clawClose=1;
+            }
+            if (PINA & 0b00000100){		//Training Start
+	            trainingStart=1;
+            }
+            if (PINA & 0b00001000){		//training end
+	            trainingEnd=1;
+            }
+            if (PINA & 0b00010000){		//repeat
+	            repeat=1;
+            }
             dtostrf(roll1, 3, 0, itmp); uart_puts(itmp); uart_puts(",");
             dtostrf(pitch1, 3, 0, itmp);uart_puts(itmp); uart_puts(",");
-            dtostrf(yaw1, 3, 0, itmp);uart_puts(itmp);
+            dtostrf(yaw1, 3, 0, itmp);uart_puts(itmp);uart_puts(",");
+			dtostrf(clawOpen, 3, 0, itmp);uart_puts(itmp);
+			dtostrf(clawClose, 3, 0, itmp);uart_puts(itmp);
+			dtostrf(trainingStart, 3, 0, itmp);uart_puts(itmp);
+			dtostrf(trainingEnd, 3, 0, itmp);uart_puts(itmp);
+			dtostrf(repeat, 3, 0, itmp);uart_puts(itmp);
+            
             
 			
 			if (!(yawDiff>allowedDiff || rollDiff>allowedDiff || pitchDiff>allowedDiff)){
@@ -288,7 +319,7 @@ int main(void) {
         }
         else {
             
-            PORTB = 0b10011001;
+        //    PORTB = 0b10011001;
             
            // uart_puts("calibrating...");
 
