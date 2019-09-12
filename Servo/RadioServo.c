@@ -11,20 +11,30 @@
 #include <avr/io.h>
 #include<avr/interrupt.h>
 #include<util/delay.h>
+#include<stdlib.h>
 
 #define UART_BAUD_RATE 9600
-#include "uart.h"
-#include "stdutils.h"
+#include "uart/uart.h"
+
 
 volatile unsigned int timerCount = 0;
 volatile int servo1 = 90;//base
 
 volatile int servo2 = 90;
 
-volatile int servo3 = 90;
+volatile int servo3 = 115;
 int servo4 = 90;
 int servo5 = 90;
 int servo6 = 90; //clamp
+
+volatile int servo1On = 1;
+volatile int servo2On = 1;
+volatile int servo3On = 1;
+volatile int servo4On = 1;
+volatile int servo5On = 1;
+volatile int servo6On = 1;
+volatile int servo7On = 1;
+volatile int servo8On = 1;
 
 
 
@@ -70,8 +80,8 @@ int main(void) {
 	sei();
 
 	servo1 = 90;
-	servo2 = 90;
-	servo3 = 90;
+	servo3 = 115;
+    servo2 = 130;
     
     
 	while(1) {
@@ -95,13 +105,15 @@ int main(void) {
             if(yaw < -90) yaw = -90;
             else if(yaw > 90) yaw = 90;
             
-            yaw = yaw + 90;
+            //yaw = yaw + 90;
             
-            if( abs(prevYaw - yaw) > 10) continue;
+            if( abs(prevYaw - yaw) < 10) {
+                servo1 = yaw + 90;
+                
+                prevYaw = yaw;
+            }
             
-            servo1 = yaw;
             
-            prevYaw = yaw;
             
             
             //roll
@@ -110,13 +122,15 @@ int main(void) {
             if(roll < -90) roll = -90;
             else if(roll > 90) roll = 90;
             
-            roll = roll + 90;
+//            roll = roll + 90;
             
-            if( abs(prevRoll - roll) > 10) continue;
+            if( abs(prevRoll - roll) < 10) {
+                servo5 = roll + 90;
+                
+                prevRoll = roll;
+            }
             
-            servo5 = roll;
-            
-            prevRoll = roll;
+          
             
             
             
@@ -126,34 +140,78 @@ int main(void) {
             if(pitch < -90) pitch = -90;
             else if(pitch > 90) pitch = 90;
             
-            pitch = pitch + 90;
+            //pitch = pitch + 90;
             
-            if( abs(prevPitch - pitch) > 10) continue;
-            
-            //processing pitch
-            //for movements within +-30 degrees, only servo2 moves
-            //if movement > +-30 and < +- 60, only servo 3 moves
-            //if movement > +- 60, only servo 4 moves
-            
-            //say pitch = 80
-            if(pitch > -30 + 90 && pitch < 30 + 90) {
-                servo2 = pitch;
-                //servo2 = 120
+            if( abs(prevPitch - pitch) < 10)  {
+                //processing pitch
+                //servos 2,3,4
+                
+                //gyro = 0 -> servo2 = 130, servo3 = 115, servo4 = 90
+                //gyro = theta ++ -> servo3 = 115 - theta, servo4 = 90 - theta, servo2 = no power
+                
+                //servo2 = init as 130
+                if(pitch > 0) {
+                    servo3 = 115 - pitch;
+                    servo4 = 90 - pitch;
+                    servo2On = 0;
+                }
+                else if(pitch < 0) {
+                    
+                    //pitch is negative, so we used +'s instead of -'s in the formulas, we couldve used abs(), but eh
+                    //servo2 is 130
+                    if((130 + pitch) > 80) {
+                        servo2 = 130 + pitch;
+                    }
+                    else {
+                        servo2 = 80;
+                    }
+                    
+                    if((115 + pitch) > 30) {
+                        servo3 = 115 + pitch;
+                    }
+                    else {
+                        servo2 = 30;
+                    }
+                       
+                    
+                    servo4 = 90 + pitch;
+                }
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+//                //say pitch = 80
+//                if(pitch > -30 + 90 && pitch < 30 + 90) {
+//                    servo2 = pitch;
+//                    //servo2 = 120
+//                }
+//                
+////                else if(pitch > -60 + 90 && pitch < 60 + 90) {
+////                    servo3 = pitch - servo2;
+////                    //servo3 = 30
+////                }
+////
+////                else {
+////                    servo4 = pitch - servo3 - servo2;
+////                    //servo4 = 50 for pitch = 80
+////                }
+                prevPitch = pitch;
+                
+                //say pitch = 80
+                //so, servo2 = 120, servo3 = 140, servo4 =
             }
             
-            else if(pitch > -60 + 90 && pitch < 60 + 90) {
-                servo3 = pitch - servo2;
-                //servo3 = 30
-            }
             
-            else {
-                servo4 = pitch - servo3 - servo2;
-                //servo4 = 50 for pitch = 80
-            }
-            prevPitch = pitch;
-            
-            //say pitch = 80
-            //so, servo2 = 120, servo3 = 140, servo4 =
 		}
 
 
@@ -164,6 +222,38 @@ int main(void) {
 
 ISR(TIMER1_COMPA_vect) {
 	//interrupt called when TCNT1 value reaches ICR1 value (every 20ms)
-    PORTA = 0xFF;
+    
+
+    PORTA = 0x00;
+    if(servo1On == 1) {
+        PORTA |= 1 << PINA0;
+    }
+    
+    if(servo2On == 1) {
+        PORTA |= 1 << PINA1;
+    }
+    
+    if(servo3On == 1) {
+        PORTA |= 1 << PINA2;
+    }
+    
+    if(servo4On == 1) {
+        PORTA |= 1 << PINA3;
+    }
+    
+    if(servo5On == 1) {
+        PORTA |= 1 << PINA4;
+    }
+    
+    if(servo6On == 1) {
+        PORTA |= 1 << PINA5;
+    }
+    if(servo7On == 1) {
+        PORTA |= 1 << PINA6;
+    }
+    if(servo8On == 1) {
+        PORTA |= 1 << PINA7;
+    }
+    
 	
 }
