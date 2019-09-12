@@ -46,5 +46,5 @@ void moveArm(int start, int finish, int DELAY)
 
 void loop() {
   
-    moveArm(115,115,500); //start angle, stop angle, delay after each motion
+    moveArm(90,45,500); //start angle, stop angle, delay after each motion
 }
