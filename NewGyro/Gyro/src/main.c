@@ -1,4 +1,4 @@
-#define F_CPU 1000000
+#define F_CPU 8000000
 
 #include <stdlib.h>
 #include <avr/io.h>
@@ -7,10 +7,10 @@
 #include <util/delay.h>
 #include <math.h>  //include libm
 
-#include "mpu6050/mpu6050.h"
+#include "mpu6050.h"
 
-#define UART_BAUD_RATE 4800
-#include "uart/uart.h"
+#define UART_BAUD_RATE 9600
+#include "uart.h"
 #define PI 3.14159
 
 
@@ -19,7 +19,7 @@ volatile uint32_t tot_overflow;
 void timer1_init() {
     //TCNT1, TCCR1A, TCCR1B, TIMSK, TIFR, ICR1, TIMER1_OVF_vect
     
-    TCCR1B = 1 << CS10;
+    TCCR1B = 1 << CS11;
     TIMSK = 1 << TOIE1;
     TCNT1 = 0;
     tot_overflow = 0;
@@ -53,11 +53,11 @@ int main(void) {
     double rollError = 0;
     double pitchError = 0;
     double yawError = 0;
-    double roll1;
-    double pitch1;
-    double yaw1;
+    double roll1=0;
+    double pitch1=0;
+    double yaw1=0;
     
-    double prevRoll, prevPitch, prevYaw;
+    double prevRoll=0, prevPitch=0, prevYaw=0;
     
     int calibrationState = 0;       //0 means not calibrated
     int delay = 100;
@@ -203,36 +203,46 @@ int main(void) {
         else if(calibrationState == 1) {
             roll1 -= rollError;
             pitch1 -= pitchError;
-            yaw1 -= yawError-30;
+            yaw1 -= yawError;
+			
+			  
+			//need to check for appropriate threshold values by trial and error later, using 5 for now
+			int yawDiff = abs(prevYaw - yaw1);
+			int pitchDiff = abs(prevPitch - pitch1);
+			int rollDiff = abs(prevRoll - roll1);
+			
+			int allowedDiff=80;
+			if (!( yawDiff>allowedDiff || rollDiff>allowedDiff || pitchDiff>allowedDiff)){
+				prevRoll = roll1;
+				prevYaw = yaw1;
+				prevPitch = pitch1;
+			}
+			else continue;
             
+          
             
-            //need to check for appropriate threshold values by trial and error later, using 5 for now
-            int yawDiff = abs(prevYaw - yaw1);
-            int pitchDiff = abs(prevPitch - pitch1);
-            int rollDiff = abs(prevRoll - roll1);
-            
-            if(yaw1 > 30 && yawDiff < 5) {
+            if(yaw1 > 30 && yawDiff < allowedDiff) {
                 PORTB = 0b11101110;
-                _delay_ms(delay);
+            //    _delay_ms(delay);
                 
             }
-            else if(yaw1 < -30 && yawDiff < 5) {
+            else if(yaw1 < -30 && yawDiff < allowedDiff) {
                 PORTB = 0b11011101;
-                _delay_ms(delay);
+              //  _delay_ms(delay);
             }
             else {
                 PORTB = 0b11001100;
-                _delay_ms(delay);
+              //  _delay_ms(delay);
             }
             
             
             
-            if(roll1 > 30 && rollDiff < 5) {
+            if(roll1 > 30 && rollDiff < allowedDiff) {
                 PORTB = 0b10001000;
                //_delay_ms(delay);
                 
             }
-            else if(roll1 < -30 && rollDiff < 5) {
+            else if(roll1 < -30 && rollDiff < allowedDiff) {
                 PORTB = 0b01000100;
                 //_delay_ms(delay);
             }
@@ -242,42 +252,45 @@ int main(void) {
             
             
             
-            if(pitch1 > 30 && pitchDiff < 5) {
+            if(pitch1 > 30 && pitchDiff < allowedDiff) {
                 PORTB = PORTB & 0b11001100;
                 PORTB = PORTB | 0b00100010;
-                _delay_ms(delay);
+             //   _delay_ms(delay);
                 
             }
-            else if(pitch1 < -30 && pitchDiff < 5) {
+            else if(pitch1 < -30 && pitchDiff < allowedDiff) {
                 PORTB = PORTB & 0b11001100;
                 PORTB = PORTB | 0b00010001;
-                _delay_ms(delay);
+              //  _delay_ms(delay);
             }
             else {
                 PORTB = PORTB & 0b11001100;
                 //PORTB = PORTB | 0b00000000;
-                _delay_ms(delay);
+               // _delay_ms(delay);
             }
             
             PORTB = 0b00110011;
-            _delay_ms(delay);
+            //_delay_ms(delay);
 
             
             
-            dtostrf(roll1, 3, 0, itmp); uart_puts(itmp); uart_puts("   ");
-            dtostrf(pitch1, 3, 0, itmp); uart_puts(itmp); uart_puts("   ");
-            dtostrf(yaw1, 3, 0, itmp); uart_puts(itmp); uart_puts("   ");
+            dtostrf(roll1, 3, 0, itmp); uart_puts(itmp); uart_puts(",");
+            dtostrf(pitch1, 3, 0, itmp);uart_puts(itmp); uart_puts(",");
+            dtostrf(yaw1, 3, 0, itmp);uart_puts(itmp);
             
-            prevRoll = roll1;
-            prevYaw = yaw1;
-            prevPitch = pitch1;
+			
+			if (!(yawDiff>allowedDiff || rollDiff>allowedDiff || pitchDiff>allowedDiff)){
+				prevRoll = roll1;
+				prevYaw = yaw1;
+				prevPitch = pitch1;
+			}
 
         }
         else {
             
             PORTB = 0b10011001;
             
-            uart_puts("calibrating...");
+           // uart_puts("calibrating...");
 
         }
         
@@ -289,9 +302,7 @@ int main(void) {
 //        dtostrf(qc, 3, 1, itmp); uart_puts(itmp); uart_putc(' ');
 //        dtostrf(qd, 3, 1, itmp); uart_puts(itmp); uart_putc(' ');
         
-        uart_puts("\r\n");
-        
-        uart_puts("\r\n");
+        uart_puts("\n");
         
         
         
