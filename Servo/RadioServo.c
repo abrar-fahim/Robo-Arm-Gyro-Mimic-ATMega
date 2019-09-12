@@ -20,12 +20,12 @@
 volatile unsigned int timerCount = 0;
 volatile int servo1 = 90;//base
 
-volatile int servo2 = 90;
+volatile int servo2 = 130;
 
 volatile int servo3 = 115;
-int servo4 = 90;
-int servo5 = 90;
-int servo6 = 90; //clamp
+volatile int servo4 = 90;
+volatile int servo5 = 90;
+volatile int servo6 = 90; //clamp
 
 volatile int servo1On = 1;
 volatile int servo2On = 1;
@@ -36,11 +36,11 @@ volatile int servo6On = 1;
 volatile int servo7On = 1;
 volatile int servo8On = 1;
 
+volatile int res = 0;
 
 
 
-double roll, pitch, yaw;
-double prevYaw, prevPitch, prevRoll;
+
 
 
 int getPulseWidth(int angle) {
@@ -67,13 +67,12 @@ int getPulseWidth(int angle) {
 
 int main(void) {
 	uart_init(UART_BAUD_SELECT(UART_BAUD_RATE,F_CPU));
-	sei();
 	//all servos in port A
 
-	DDRB = 0x00;
+
 	DDRA = 0xFF;
 	TCCR1A |= 1 << WGM11;
-	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS10;
+	TCCR1B |= 1 << WGM12 | 1 << WGM13 | 1 << CS11;
 	TIMSK  |= 1 << OCIE1A;
 	ICR1 = 19999;
 
@@ -84,6 +83,20 @@ int main(void) {
     servo2 = 130;
     
     
+    int roll = 0;
+    int yaw = 0;
+    int pitch = 0;
+    int prevYaw = 0;
+    int prevPitch = 0;
+    int prevRoll = 0;
+    
+    int state = 0;
+    
+    int min = -1;
+    int isRoll = 1;
+    PORTB = 0xFF;
+    int errorLimit = 5;
+    
 	while(1) {
 
 		//Here, values to servo1 and servo2 etc... will be processed from gyro readings
@@ -91,14 +104,96 @@ int main(void) {
 		if(TCNT1 >= 300 && TCNT1 <= 2300) {
 			if(TCNT1 >= getPulseWidth(servo1) && bit_is_set(PORTA, PINA0)) PORTA &= ~(1 << PINA0);
 			if(TCNT1 >= getPulseWidth(servo2) && bit_is_set(PORTA, PINA1)) PORTA &= ~(1 << PINA1);
-			if(TCNT1 >= getPulseWidth(servo3) && bit_is_set(PORTA, PINA2)) PORTA &= ~(1 << PINA3);
-            if(TCNT1 >= getPulseWidth(servo4) && bit_is_set(PORTA, PINA3)) PORTA &= ~(1 << PINA4);
-            if(TCNT1 >= getPulseWidth(servo5) && bit_is_set(PORTA, PINA4)) PORTA &= ~(1 << PINA5);
-            if(TCNT1 >= getPulseWidth(servo6) && bit_is_set(PORTA, PINA5)) PORTA &= ~(1 << PINA6);
+			if(TCNT1 >= getPulseWidth(servo3) && bit_is_set(PORTA, PINA2)) PORTA &= ~(1 << PINA2);
+            if(TCNT1 >= getPulseWidth(servo4) && bit_is_set(PORTA, PINA3)) PORTA &= ~(1 << PINA3);
+            if(TCNT1 >= getPulseWidth(servo5) && bit_is_set(PORTA, PINA4)) PORTA &= ~(1 << PINA4);
+            if(TCNT1 >= getPulseWidth(servo6) && bit_is_set(PORTA, PINA5)) PORTA &= ~(1 << PINA5);
 			
 		}
 
 		if(TCNT1 < 300 || TCNT1 > 2300) {
+            
+            //nafiz code
+            //sample data = -222,-221,-119\n
+            unsigned int c;
+            c = uart_getc();
+            //char letter = (char) c;
+            if(c == ' ') ;
+            else if(c=='\n')  {
+                //res here is yaw
+                res = res * min;
+                min = 1;
+                //state++;
+                char temp[5];
+                yaw = (int) res;
+                
+                //                if(yaw > 10) {
+                //                    PORTB = 0xFF;
+                //                }
+                //                else if(yaw < 10) {
+                //                    PORTB = 0x00;
+                //                }
+                
+                //itoa(yaw, temp, 10);
+                //uart_putc('\n'); uart_putc('\n');
+                //uart_puts("Yaw: ");
+                //uart_puts(temp);
+                //uart_putc('\n');
+                //uart_flush();
+                
+                //uart_puts("Yaw: "); uart_puts(temp); uart_puts("   ");
+                //uart_puts("\n\n");
+                res = 0;
+                state = 1;
+                
+            }
+            else if(c=='-') min = -1;
+            else if(c==',') {
+                res = res * min;
+                min = 1;
+                state++;
+                char temp[5];
+                itoa(res, temp, 10);
+                //uart_putc('\n'); uart_putc('\n');
+                
+                //uart_putc('\n');
+                //uart_flush();
+                if(isRoll == 1) {
+                    roll = (int) res;
+                    
+                    //roll = 50;
+                    //uart_puts("Roll: "); uart_puts("  ");
+                    //itoa(roll, temp, 10);
+                    //uart_puts(temp);
+                    //uart_puts("Roll: "); uart_puts(temp); uart_puts("   ");
+                    isRoll = 0;
+                }
+                else if(isRoll == 0) {
+                    
+                    //uart_puts("Pitch: ");
+                    pitch = (int) res;
+                    //itoa(pitch, temp, 10);
+                    //uart_puts(temp); uart_puts("  ");
+                    
+                    //uart_puts("Pitch: "); uart_puts(temp); uart_puts("   ");
+                    isRoll = 1;
+                }
+                res = 0;
+                
+                
+            }
+            else if(c >= '0' && c <= '9') {
+                res = res * 10 + (int)(c - '0');
+            }
+            else {
+                state = 0;
+            }
+            
+            
+            //nafiz code end
+            
+            
+            
             
             //yaw handling
             //servo 1 is yaw
@@ -107,7 +202,7 @@ int main(void) {
             
             //yaw = yaw + 90;
             
-            if( abs(prevYaw - yaw) < 10) {
+            if( abs(prevYaw - yaw) < errorLimit) {
                 servo1 = yaw + 90;
                 
                 prevYaw = yaw;
@@ -124,7 +219,7 @@ int main(void) {
             
 //            roll = roll + 90;
             
-            if( abs(prevRoll - roll) < 10) {
+            if( abs(prevRoll - roll) < errorlimit) {
                 servo5 = roll + 90;
                 
                 prevRoll = roll;
@@ -142,7 +237,7 @@ int main(void) {
             
             //pitch = pitch + 90;
             
-            if( abs(prevPitch - pitch) < 10)  {
+            if( abs(prevPitch - pitch) < errorlimit)  {
                 //processing pitch
                 //servos 2,3,4
                 
@@ -156,7 +251,7 @@ int main(void) {
                     servo2On = 0;
                 }
                 else if(pitch < 0) {
-                    
+
                     //pitch is negative, so we used +'s instead of -'s in the formulas, we couldve used abs(), but eh
                     //servo2 is 130
                     if((130 + pitch) > 80) {
@@ -165,17 +260,19 @@ int main(void) {
                     else {
                         servo2 = 80;
                     }
-                    
+
                     if((115 + pitch) > 30) {
                         servo3 = 115 + pitch;
                     }
                     else {
                         servo2 = 30;
                     }
-                       
-                    
+
+
                     servo4 = 90 + pitch;
                 }
+                
+                prevPitch = pitch;
                 
                 
                 
@@ -195,23 +292,23 @@ int main(void) {
 //                    servo2 = pitch;
 //                    //servo2 = 120
 //                }
-//                
-////                else if(pitch > -60 + 90 && pitch < 60 + 90) {
-////                    servo3 = pitch - servo2;
-////                    //servo3 = 30
-////                }
-////
-////                else {
-////                    servo4 = pitch - servo3 - servo2;
-////                    //servo4 = 50 for pitch = 80
-////                }
-                prevPitch = pitch;
+                
+//                else if(pitch > -60 + 90 && pitch < 60 + 90) {
+//                    servo3 = pitch - servo2;
+//                    //servo3 = 30
+//                }
+//
+//                else {
+//                    servo4 = pitch - servo3 - servo2;
+//                    //servo4 = 50 for pitch = 80
+//                }
+                
                 
                 //say pitch = 80
                 //so, servo2 = 120, servo3 = 140, servo4 =
             }
             
-            
+          
 		}
 
 
@@ -224,36 +321,36 @@ ISR(TIMER1_COMPA_vect) {
 	//interrupt called when TCNT1 value reaches ICR1 value (every 20ms)
     
 
-    PORTA = 0x00;
-    if(servo1On == 1) {
-        PORTA |= 1 << PINA0;
-    }
-    
-    if(servo2On == 1) {
-        PORTA |= 1 << PINA1;
-    }
-    
-    if(servo3On == 1) {
-        PORTA |= 1 << PINA2;
-    }
-    
-    if(servo4On == 1) {
-        PORTA |= 1 << PINA3;
-    }
-    
-    if(servo5On == 1) {
-        PORTA |= 1 << PINA4;
-    }
-    
-    if(servo6On == 1) {
-        PORTA |= 1 << PINA5;
-    }
-    if(servo7On == 1) {
-        PORTA |= 1 << PINA6;
-    }
-    if(servo8On == 1) {
-        PORTA |= 1 << PINA7;
-    }
+    PORTA = 0xFF;
+//    if(servo1On == 1) {
+//        PORTA |= 1 << PINA0;
+//    }
+//
+//    if(servo2On == 1) {
+//        PORTA |= 1 << PINA1;
+//    }
+//
+//    if(servo3On == 1) {
+//        PORTA |= 1 << PINA2;
+//    }
+//
+//    if(servo4On == 1) {
+//        PORTA |= 1 << PINA3;
+//    }
+//
+//    if(servo5On == 1) {
+//        PORTA |= 1 << PINA4;
+//    }
+//
+//    if(servo6On == 1) {
+//        PORTA |= 1 << PINA5;
+//    }
+//    if(servo7On == 1) {
+//        PORTA |= 1 << PINA6;
+//    }
+//    if(servo8On == 1) {
+//        PORTA |= 1 << PINA7;
+//    }
     
 	
 }
