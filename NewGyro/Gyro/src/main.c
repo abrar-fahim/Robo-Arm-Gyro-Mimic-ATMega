@@ -305,6 +305,7 @@ int main(void) {
 	            trainingEnd = 1;
                 isRecording = 0;
                 finalAddress = address;
+                eeprom_update_byte((uint8_t *) 1000, finalAddress);
                 address = 0;
             }
             if (PINA & 0b00010000){		//repeat
@@ -315,6 +316,14 @@ int main(void) {
             if(isRecording == 1) {
                 
                 if((getElapsedTime() / 100) - prevRecordTime > 2) {
+                    if(address > 900) {
+                        isRecording = 0;
+                        trainingEnd = 1;
+                        finalAddress = address;
+                        eeprom_update_byte((uint8_t *) 1000, finalAddress);
+                        address = 0;
+                        
+                    }
                     uint8_t temp = (uint8_t) roll1;
                     eeprom_update_byte((uint8_t *) address, temp);
                     address++;
@@ -331,6 +340,7 @@ int main(void) {
                     eeprom_update_byte((uint8_t *) address, temp);
                     address++;
                     prevRecordTime = getElapsedTime();
+                    
                 }
                 
                 
