@@ -7,10 +7,11 @@
 #include <util/delay.h>
 #include <math.h>  //include libm
 
-#include "mpu6050.h"
+#include "mpu6050/mpu6050.h"
+#include <avr/eeprom.h>
 
 #define UART_BAUD_RATE 9600
-#include "uart.h"
+#include "uart/uart.h"
 #define PI 3.14159
 
 
@@ -110,6 +111,11 @@ int main(void) {
     
     timer1_init();
 
+    int isRecording = 0;
+    int address = 0;
+    int prevRecordTime = 0;
+    int isPlayback = 0;
+    int finalAddress = 0;
 	for(;;) {
         //uart_puts("hello");
 		#if MPU6050_GETATTITUDE == 0
@@ -291,22 +297,111 @@ int main(void) {
 	            clawClose=1;
             }
             if (PINA & 0b00000100){		//Training Start
-	            trainingStart=1;
+	            if(isRecording == 0) prevRecordTime = getElapsedTime();
+                trainingStart=1;
+                isRecording = 1;
             }
-            if (PINA & 0b00001000){		//training end
-	            trainingEnd=1;
+            if (PINA & 0b00001000) {		//training end
+	            trainingEnd = 1;
+                isRecording = 0;
+                finalAddress = address;
+                address = 0;
             }
             if (PINA & 0b00010000){		//repeat
+                if(isPlayback == 0) prevRecordTime = getElapsedTime();
+                isPlayback = 1;
 	            repeat=1;
             }
-            dtostrf(roll1, 3, 0, itmp); uart_puts(itmp); uart_puts(",");
-            dtostrf(pitch1, 3, 0, itmp);uart_puts(itmp); uart_puts(",");
-            dtostrf(yaw1, 3, 0, itmp);uart_puts(itmp);uart_puts(",");
-			dtostrf(clawOpen, 3, 0, itmp);uart_puts(itmp);
-			dtostrf(clawClose, 3, 0, itmp);uart_puts(itmp);
-			dtostrf(trainingStart, 3, 0, itmp);uart_puts(itmp);
-			dtostrf(trainingEnd, 3, 0, itmp);uart_puts(itmp);
-			dtostrf(repeat, 3, 0, itmp);uart_puts(itmp);
+            if(isRecording == 1) {
+                
+                if((getElapsedTime() / 100) - prevRecordTime > 2) {
+                    uint8_t temp = (uint8_t) roll1;
+                    eeprom_update_byte((uint8_t *) address, temp);
+                    address++;
+                    
+                    temp = (uint8_t) pitch1;
+                    eeprom_update_byte((uint8_t *) address, temp);
+                    address++;
+                    
+                    temp = (uint8_t) yaw1;
+                    eeprom_update_byte((uint8_t *) address, temp);
+                    address++;
+                    
+                    temp = (uint8_t) (clawOpen * 10 + clawClose);
+                    eeprom_update_byte((uint8_t *) address, temp);
+                    address++;
+                    prevRecordTime = getElapsedTime();
+                }
+                
+                
+            }
+            
+            if(isPlayback == 1) {
+                char itmp[10];
+                int8_t temp;
+                
+                if((getElapsedTime() / 100) - prevRecordTime > 2) {
+                    
+                }
+                //roll
+                temp = (int8_t) eeprom_read_byte ((const uint8_t*) address);
+                address++;
+                
+                
+                
+                itoa(temp, itmp, 10); uart_puts(itmp); uart_puts(",");
+                
+                //pitch
+                temp = (int8_t) eeprom_read_byte ((const uint8_t*) address);
+                address++;
+            
+                
+                
+                itoa(temp, itmp, 10); uart_puts(itmp); uart_puts(",");
+                
+                //yaw
+                temp = (int8_t) eeprom_read_byte ((const uint8_t*) address);
+                address++;
+                
+                
+                itoa(temp, itmp, 10); uart_puts(itmp); uart_puts(",");
+                
+                //claw open and close
+                temp = (int8_t) eeprom_read_byte ((const uint8_t*) address);
+                address++;
+                
+                int clawOpen = temp / 10;
+                int clawClose=temp  % 10;
+                
+                itoa(clawOpen, itmp, 10); uart_puts(itmp);
+                
+                itoa(clawClose, itmp, 10); uart_puts(itmp);
+                
+                uart_puts("0");
+                uart_puts("0");
+                uart_puts("0");
+                
+                
+                uart_puts("\n");
+                
+                address=address % finalAddress;
+                
+            }
+            else if(isPlayback == 0) {
+                dtostrf(roll1, 3, 0, itmp); uart_puts(itmp); uart_puts(",");
+                dtostrf(pitch1, 3, 0, itmp);uart_puts(itmp); uart_puts(",");
+                dtostrf(yaw1, 3, 0, itmp);uart_puts(itmp);uart_puts(",");
+                dtostrf(clawOpen, 3, 0, itmp);uart_puts(itmp);
+                dtostrf(clawClose, 3, 0, itmp);uart_puts(itmp);
+                dtostrf(trainingStart, 3, 0, itmp);uart_puts(itmp);
+                dtostrf(trainingEnd, 3, 0, itmp);uart_puts(itmp);
+                dtostrf(repeat, 3, 0, itmp);uart_puts(itmp);
+            }
+            
+            
+            
+            
+            
             
             
 			
