@@ -8,12 +8,13 @@ The controller measures its roll, pitch and yaw values and transmits them via a 
 where the. roll, pitch and yaw values are mapped to the position of the servos.
 
 
-##### Two circuit modules, each with an ATMega32 microchip.
+#### Two circuit modules, each with an ATMega32 microchip.
+
 *Communication via two HC 05 bluetooth modules which were previously paired.*
 
-* ReceiverAndServo folder contains the [c files](ReceiverAndServo/servo.c) for programming the receiver ATMega32 unit where the 6 servos are attached.
+* **ReceiverAndServo** folder contains the [c files](ReceiverAndServo/servo.c) for programming the receiver ATMega32 unit where the 6 servos are attached.
 
-* TransmitterAndGyroscope folder contains [c files](TransmitterAndGyroscope/src/main.c) for programming the transmitter ATMega32 unit where the gyroscope is attached.
+* **TransmitterAndGyroscope** folder contains [c files](TransmitterAndGyroscope/src/main.c) for programming the transmitter ATMega32 unit where the gyroscope is attached.
 
 
 Use uart folder to use Serial I/O for debugging independently.
