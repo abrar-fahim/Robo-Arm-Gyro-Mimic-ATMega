@@ -10,6 +10,10 @@ where the. roll, pitch and yaw values are mapped to the position of the servos.
 Two circuit modules, each with an ATMega32 microchip.
 Communication via two HC 05 bluetooth modules which were previously paired.
 
+ReceiverAndServo folder contains files c files for programming the receiver ATMega32 unit where the 6 servos are attached.
+
+TransmitterAndGyroscope folder contains c files for programming the transmitter ATMega32 unit where the gyroscope is attached.
+
 
 Use uart folder to use Serial I/O for debugging independently.
-Other folders already have required uart directories
+Other folders already have required uart directories.
